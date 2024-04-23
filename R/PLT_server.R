@@ -34,23 +34,24 @@ plt_server <- function(input, output, session) {
     #It doesn't accept special characters
 
     # Input options for cleaning process
-    if ("Make all data to lower case" %in% input$clean_options) {
+    if ("Change all data to lower case" %in% input$clean_options) {
       # data_clean <- data_clean %>% dplyr::mutate_if(is.character, tolower)
+      print(data_clean)
       data_clean <- dplyr::mutate_if(data_clean, is.character, tolower)
     }
     if ("Delete repeated rows" %in% input$clean_options) {
       data_clean <- unique(data_clean)
     }
-    if ("Delete punctuations" %in% input$clean_options) {
+    if ("Delete punctuation marks" %in% input$clean_options) {
       # data_clean <- data_clean %>% dplyr::mutate_all(~gsub("[[:punct:]]", "", .))
       data_clean <- dplyr::mutate_all(data_clean, function(x) gsub("[[:punct:]]", "", x))
     }
-    if ("Delete spaces" %in% input$clean_options) {
+    if ("Delete all spaces" %in% input$clean_options) {
       # data_clean <- data_clean %>% dplyr::mutate_all(~gsub(" ", "", .))
       data_clean <- dplyr::mutate_all(data_clean, function(x) gsub(" ", "", x))
     }
     # Returns data after cleaning process
-    data_clean
+    return(data_clean)
   })
 
   # It calculates and returns the number of rows of data (show as panel information)

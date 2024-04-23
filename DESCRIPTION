@@ -1,7 +1,7 @@
 Package: WordListsAnalytics
 Type: Package
 Title: Multiple Data Analysis Tools for Property Listing Tasks
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(
     person("Sebastian","Moreno",role = c("aut", "cre"),
            email = "sebastian.moreno.araya@gmail.com"),
@@ -29,10 +29,10 @@ Collate: 'CPN_27.R' 'CPN_120.R' 'tab_upload_data.R' 'tab_estimations.R'
         'fun_threshold_graph.R' 'fun_cluster_image_function.R'
         'PLT_server.R' 'PLT_app.R'
 NeedsCompilation: no
-Packaged: 2024-04-18 15:46:33 UTC; Cris
+Packaged: 2024-04-23 13:55:26 UTC; Cris
 Author: Sebastian Moreno [aut, cre],
   Cristobal Heredia [aut],
   Enrique Canessa [ths],
   Sergio Chaigneau [ths]
 Repository: CRAN
-Date/Publication: 2024-04-18 19:42:45 UTC
+Date/Publication: 2024-04-23 14:30:02 UTC
