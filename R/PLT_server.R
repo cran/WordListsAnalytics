@@ -36,7 +36,7 @@ plt_server <- function(input, output, session) {
     # Input options for cleaning process
     if ("Change all data to lower case" %in% input$clean_options) {
       # data_clean <- data_clean %>% dplyr::mutate_if(is.character, tolower)
-      print(data_clean)
+      #print(data_clean)
       data_clean <- dplyr::mutate_if(data_clean, is.character, tolower)
     }
     if ("Delete repeated rows" %in% input$clean_options) {
@@ -264,7 +264,7 @@ plt_server <- function(input, output, session) {
 
   # Renders text explaining s value
   output$s_explanation <- shiny::renderText({
-    "The 's' value represents the average size of a property sample derived from a concept. It is computed by determining the mean size of the properties associated with each concept."
+    "The 's' value represents the average list length (nr. of properties) listed by participants for a given concept."
   })
 
   # Data for P(A)
