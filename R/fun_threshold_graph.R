@@ -26,6 +26,7 @@ getValuesClusterKids <- function(data,simThreshold){
   cleanData = data.frame(matrix(ncol = ncol(data), nrow = 0))
   colnames(cleanData) = colnames(data)
 
+
   #For each subject, we extract their words, and check for repetitions
   for (i in unique(data[,1])){
     tempData=data[data[,1]==i,]
@@ -34,7 +35,6 @@ getValuesClusterKids <- function(data,simThreshold){
     }
     cleanData=rbind(cleanData,tempData)
   }
-  data=cleanData
 
   #Transforming the data to indexes for the matrix visualization
   tempVectorIndexes=numeric(nrow(data))
@@ -49,6 +49,7 @@ getValuesClusterKids <- function(data,simThreshold){
   }
   data$indexes=tempVectorIndexes
   ################END OF CLEANING PROCESS#########################
+
 
   ################SIMILARITY PROCESS################################
   numMaxWords=length(unique(data[,2])) #Number of unique words

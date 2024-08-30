@@ -9,6 +9,8 @@ plt_ui <- fluidPage(
     tab_property_simulator, # Panel showing concept input and simulated data
     tab_pa_data, # Panel showing frequency and "s" value by concept and property
     tab_pa_values, # Panel showing P(a) inputs and results
-    tab_cluster_image # Panel with cluster input, generation and plotting
+    tab_cluster_image, # Panel with cluster input, generation and plotting
+    tab_cosine_distance, # Panel with cosine distance
+    tab_t_c_a_calculator
   )
 )

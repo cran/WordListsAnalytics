@@ -258,7 +258,7 @@ plt_server <- function(input, output, session) {
     }, error = function(e) {
       # Handle the error gracefully
       # You can display an error message or take other appropriate actions
-      print("Error: Invalid pa_data()")
+      print("Error: Invalid pa_data(), please upload data")
     })
   })
 
@@ -270,31 +270,64 @@ plt_server <- function(input, output, session) {
   # Data for P(A)
   pa_data <- shiny::reactive({
 
+    #Correct implementation that doesn't work for R packages
+    #concept_s <- cleaned_data() %>% dplyr::count(Concept, ID) %>% dplyr::group_by(Concept) %>% dplyr::summarise(s = mean(n))
     cleaned_data <- cleaned_data()
-    cleaned_data_count <- dplyr::count(cleaned_data, "Concept" = cleaned_data$Concept, "ID" = cleaned_data$ID)
-    grouped_data <- dplyr::group_by(cleaned_data_count, "Concept" = cleaned_data_count$Concept)
-    concept_s <- dplyr::summarise(grouped_data, s = mean(grouped_data$n))
 
-
-    # cleaned_data_count <- dplyr::count(cleaned_data(), Concept, ID)
-    # grouped_data <- dplyr::group_by(cleaned_data_count, Concept)
-    # concept_s <- dplyr::summarise(grouped_data, s = mean(n))
+    # Correct second implementation that doesn't work for R packages
+    # concept_s <- dplyr::summarise(
+    #   dplyr::group_by(
+    #     dplyr::count(cleaned_data, Concept, ID),
+    #     Concept
+    #   ),
+    #   s = mean(n)
+    # )
     # print(concept_s)
 
-    # Version using pipe
-    # concept_s <- cleaned_data() %>% dplyr::count(Concept, ID) %>% dplyr::group_by(Concept) %>% dplyr::summarise(s = mean(n))
+    # Correct third implementation that doesn't work for R packages
+    #temp_counts <- dplyr::count(cleaned_data, Concept, ID)
+
+
+    temp_counts <- as.data.frame(table(cleaned_data$Concept, cleaned_data$ID))
+    names(temp_counts) <- c("Concept", "ID", "n")
+    # Step 2: Remove rows where n (Freq) is zero
+    temp_counts <- temp_counts[temp_counts$n > 0, ]
+    # Step 3: Order the data frame by Concept alphabetically
+    temp_counts <- temp_counts[order(temp_counts$Concept), ]
+
+
+    # Step 2: Initialize an empty list to store results
+    results_list <- list()
+
+    # Step 3: Extract unique Concepts
+    unique_concepts <- unique(temp_counts$Concept)
+
+    # Step 4: Loop through each unique Concept and calculate the mean
+    for (concept in unique_concepts) {
+      # Filter rows for the current concept
+      concept_data <- temp_counts[temp_counts$Concept == concept, ]
+
+      # Calculate the mean of n for this concept
+      mean_n <- mean(concept_data$n)
+
+      # Store the result in a list
+      results_list[[concept]] <- mean_n
+    }
+
+    # Step 5: Convert the results list to a data frame
+    concept_s <- data.frame(
+      Concept = unique_concepts,
+      s = unlist(results_list)
+    )
+
 
     grouped_data <- dplyr::group_by(cleaned_data, "Concept" = cleaned_data$Concept, "Property" = cleaned_data$Property)
     summarized_data <- dplyr::summarize(grouped_data, Frequency = dplyr::n())
     df_combined <- dplyr::left_join(summarized_data, concept_s, by = c("Concept" = "Concept"))
 
-    # df_combined <- dplyr::left_join(cleaned_data() %>%
-    #                            dplyr::group_by(Concept, Property) %>%
-    #                            dplyr::summarize(Frequency = dplyr::n()),
-    #                          concept_s, by = dplyr::join_by(Concept == Concept))
-    #print(df_combined)
     stats::na.omit(df_combined)
   })
+
 
   #Show p(a) table
   output$pa_table <- shiny::renderUI({
@@ -333,7 +366,7 @@ plt_server <- function(input, output, session) {
     }, error = function(e) {
       # Handle the error gracefully
       # You can display an error message or take other appropriate actions
-      print("Error: Invalid pa_data()")
+      print("Error: Invalid pa_data(), please upload data")
     })
   })
 
@@ -347,11 +380,11 @@ plt_server <- function(input, output, session) {
     }, error = function(e) {
       # Handle the error gracefully
       # You can display an error message or take other appropriate actions
-      print("Error: Invalid pa_data()")
+      print("Error: Invalid pa_data(), please upload datav")
     })
   })
 
-  # Creates reactive vaariable for pa_values
+  # Creates reactive variable for pa_values
   pa_values_data <- shiny::reactiveValues(data = NULL)
 
   # In case it presses calculate individual p(a) button
@@ -422,7 +455,7 @@ plt_server <- function(input, output, session) {
     char_to_numeric <- stats::setNames(1:length(unique_chars), unique_chars)
 
     # Step 3: Replace character values with numeric values
-    data_final$ID <- char_to_numeric[data_final$ID]
+    #data_final$ID <- char_to_numeric[data_final$ID]
 
     data_final
   })
@@ -571,9 +604,6 @@ plt_server <- function(input, output, session) {
   number_shift_data <- shiny::reactive({
     if(nrow(graph_concept_data()) > 1){ # Check if data was correctly loaded
       data = getValuesClusterKids(graph_concept_data(), input$threshold_graph)
-      numeric_values <- data$Subject
-      char_values <- names(char_to_numeric)[match(numeric_values, char_to_numeric)]
-      data$Subjects <- char_values
       data
     }
   })
@@ -632,4 +662,60 @@ plt_server <- function(input, output, session) {
       utils::write.csv(temp[[2]], file, row.names = FALSE)
     }
   )
+
+
+
+  ### DISTANCE COSINE TAB
+
+  # Graph concept data reactive variable
+  cosine_distance <- shiny::reactive({
+    if(nrow(cleaned_data()) > 0 ){
+      # PASO 1: Obtener matriz de frecuencias: conceptos x propiedades
+      matriz_frecuencia <- as.data.frame.matrix(table(cleaned_data()$Concept, cleaned_data()$Property))
+
+      # PASO 2: Calcular similitud coseno:
+      # Metodo 1: Paquete R
+      matriz_similitud_paquete <- lsa::cosine(t(as.matrix(matriz_frecuencia)))
+
+
+      matriz_similitud_paquete
+    }
+  })
+
+  # Renders p(a) table
+  # Render the cosine distance table
+  output$cosine_distance_table <- shiny::renderTable({
+    cosine_distance()
+  })
+
+  # Download cosine matrix data
+  output$download_cosine_matrix <- shiny::downloadHandler(
+    filename = function() {
+      paste("cosine_matrix", Sys.Date(), ".csv", sep = "_")
+    },
+    content = function(file) {
+      utils::write.csv(cosine_distance(), file, row.names = TRUE)
+    }
+  )
+
+  ### T C A CALCULATOR
+  results <- reactive({
+    calculate_root(input$concept_tca, input$s_avg, input$C_target)
+  })
+
+  output$plot1 <- renderPlot({
+    results()$plot1
+  })
+
+  output$plot2 <- renderPlot({
+    results()$plot2
+  })
+
+  output$T_uncorrected <- renderText({
+    paste("T uncorrected =", results()$T_uncorrected)
+  })
+
+  output$T_corrected <- renderText({
+    paste("T corrected =", results()$T_corrected)
+  })
 }
